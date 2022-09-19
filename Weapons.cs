@@ -26,28 +26,74 @@ public abstract class Weapons : Object
     {
         return true;
     }
-    protected bool isMelee;
-    public bool meleeCheck()
+    public bool isMelee;
+    public bool isAutomatic;
+    protected Transform muzzle;
+    public void setMuzzle(Transform m)
     {
-        return isMelee;
+        muzzle = m;
+    }
+    public virtual void setBulletPrefab(GameObject bP)
+    {
+
+    }
+    public virtual int getCurrentAmmo()
+    {
+        return 0;
+    }
+    public virtual void setCurrentAmmo(int a)
+    {
+
+    }
+    public virtual int getMaxAmmo()
+    {
+        return 0;
     }
 
 }
 public class Melee : Weapons
 {
     protected string damage_type;
-    protected int range;
+    protected float range = 4;
     public Melee()
     {
         isMelee = true;
+        isAutomatic = true;
     }
+    public override bool readyToAttack()
+    {
+        if (timeSinceLastAttack >= timeBetweenAttacks)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
+    }
+    public override void Attack()
+    {
+        Collider2D[] entitiesHit = Physics2D.OverlapCircleAll(muzzle.position, range); // casts a circle from the attack point (muzzle because im too lazy to change it), over the radius of the range and only takes entity layer colliders
+        foreach(Collider2D entity in entitiesHit)
+        {
+            Debug.Log("Kill");
+        }
+        Debug.Log("cry");
+        timeSinceLastAttack = 0;
+    }
+}
+public class Fists : Melee
+{
+    
 }
 public class Katana : Melee
 {
-    public Katana() : base()
+    public Katana()
     {
         damage_type = "sharp";
-
+        range = 2.5f;
+        timeBetweenAttacks = 2;
     }
 }
 public class Pipe : Melee
@@ -56,6 +102,8 @@ public class Pipe : Melee
     public Pipe()
     {
         damage_type = "blunt";
+        range = 2;
+        timeBetweenAttacks = 2;
     }
 }
 public class Guns : Weapons
@@ -63,35 +111,37 @@ public class Guns : Weapons
     public Guns()
     {
         isMelee = false;
+        isAutomatic = false;
     }
-    protected Transform muzzle;
-    public void setMuzzle(Transform m)
-    {
-        muzzle = m;
-    }
+    
+    
     protected GameObject bulletPrefab;
-    public void setBulletPrefab(GameObject bP)
+    public override void setBulletPrefab(GameObject bP)
     {
         bulletPrefab = bP;
     }
 
-    protected int projectileSpeed = 14;
-    protected int spread;
-    protected bool isAutomatic = false;
+    protected int projectileSpeed;
+    protected float spread;
+    
   
     protected int maxAmmo;
-    public int getMaxAmmo()
+    public override int getMaxAmmo()
     {
         return maxAmmo;
     }
     protected int currentAmmo;
-    public int getCurrentAmmo()
+    public override int getCurrentAmmo()
     {
         return currentAmmo;
     }
-    
-    
-    
+    public override void setCurrentAmmo(int a)
+    {
+        currentAmmo = a;
+    }
+
+
+
     public override bool readyToAttack()
     {
         if (timeSinceLastAttack >= timeBetweenAttacks && currentAmmo > 0)
@@ -107,7 +157,7 @@ public class Guns : Weapons
     public override void Attack()
     {
         float x = Random.Range(-spread, spread);
-        float y = Random.Range(-spread, spread);
+        float y = Random.Range(-spread, spread); 
 
         GameObject bullet = Instantiate(bulletPrefab, muzzle.position, muzzle.rotation);
         Rigidbody2D bulletrb = bullet.GetComponent<Rigidbody2D>();
@@ -118,45 +168,32 @@ public class Guns : Weapons
     
 }
 public class Pistol : Guns
-{   
-    
+{
+
     public Pistol()
     {
-        
-        spread = 2;
+        projectileSpeed = 15;
+        spread = 1;
         timeBetweenAttacks = 1;
+        maxAmmo = 12;
+        currentAmmo = 12;
     }
     public override void Attack()
     {
         base.Attack(); // propels the bullet forward
         currentAmmo--;
     }
-    
-}
-public class Shotgun : Guns
-{
-    public Shotgun()
-    {
-        spread = 4;
-        timeBetweenAttacks = 1;
-        maxAmmo = 8;
-        currentAmmo = 8;
-    }
-    public override void Attack()
-    {
-        for (int i = 0; i < 8; i++)
-        {
 
-            base.Attack();
-        }
-        currentAmmo--;
-    }
 }
 public class Rifle : Guns
 {
     public Rifle()
     {
-        spread = 3;
+        projectileSpeed = 17;
+        spread = 2;
+        timeBetweenAttacks = 0.12f;
+        maxAmmo = 32;
+        currentAmmo = 32;
         isAutomatic = true;
 
     }
@@ -166,7 +203,31 @@ public class Rifle : Guns
         currentAmmo--;
     }
 }
-public class Sniper : Guns
+public class Shotgun : Guns
 {
 
+    public Shotgun()
+    {
+        projectileSpeed = 14;
+        spread = 3.5f;
+        timeBetweenAttacks = 1;
+        maxAmmo = 8;
+        currentAmmo = 8;
+    }
+    public override void Attack()
+    {
+        for (int i = 0; i < 6; i++)
+        {
+
+            base.Attack();
+        }
+        currentAmmo--;
+    }
+}
+public class Sniper : Guns
+{
+    public Sniper()
+    {
+
+    }
 }
