@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Player : MonoBehaviour
 {
@@ -10,31 +11,48 @@ public class Player : MonoBehaviour
     public Transform crosshair;
     public GameObject bulletPrefab;
     public Transform muzzle;
-    public float timer;
-    Shotgun currentWeapon = new Shotgun();
-    
+    public GameObject ammoCount;
+    private int maxAmmo;
+    private int currentAmmo;
+    Weapons currentWeapon = new Rifle();
+
     // Start is called before the first frame update
     void Start()
     {
         weaponCheck();
-
+        
 
     }
 
     // Update is called once per frame
     void Update()
     {
-        Debug.Log(currentWeapon.getTimeSinceLastAttack());
-         //time since last frame added on to the timer
+        
+         
         currentWeapon.setTimeSinceLastAttack(currentWeapon.getTimeSinceLastAttack() + Time.deltaTime);
+        //time since last frame added on to the timer
 
         Movement();
         Aim();
-        if (Input.GetMouseButton(0) && currentWeapon.readyToAttack())
+        if (Input.GetMouseButton(0) && currentWeapon.readyToAttack() && currentWeapon.isAutomatic)
         {
-            Debug.Log("Mouse button is pressed down");
+            Debug.Log("Mouse button is held down");
             currentWeapon.Attack();
-           
+            if (!currentWeapon.isMelee){
+                currentAmmo = currentWeapon.getCurrentAmmo();
+                ammoCount.GetComponent<Text>().text = currentAmmo.ToString() + "/" + maxAmmo.ToString();
+            }
+            
+        }
+        else if(Input.GetMouseButtonDown(0) && currentWeapon.readyToAttack())
+        {
+            Debug.Log("Mouse button was pressed");
+            currentWeapon.Attack();
+            if (!currentWeapon.isMelee)
+            {
+                currentAmmo = currentWeapon.getCurrentAmmo();
+                ammoCount.GetComponent<Text>().text = currentAmmo.ToString() + "/" + maxAmmo.ToString();
+            }
         }
 
         
@@ -71,13 +89,26 @@ public class Player : MonoBehaviour
     {
         weaponCheck();
     }
+    void discardWeapn()
+    {
+
+    }
+
 
     void weaponCheck()
     {
-        if (!currentWeapon.meleeCheck())
+        if (currentWeapon.isMelee)
+        {
+            ammoCount.GetComponent<Text>().text = "";
+        }
+        if (!currentWeapon.isMelee)
         {
             currentWeapon.setMuzzle(muzzle);
             currentWeapon.setBulletPrefab(bulletPrefab);
+            maxAmmo = currentWeapon.getMaxAmmo();
+            currentAmmo = currentWeapon.getCurrentAmmo();
+            ammoCount.GetComponent<Text>().text = currentAmmo.ToString() + "/" + maxAmmo.ToString();
+            
         }
     }
     private void OnCollisionEnter2D(Collision2D collision)

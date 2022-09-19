@@ -11,8 +11,8 @@ public class Bullet : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        bullet.layer = 6;
-        Physics2D.IgnoreLayerCollision(6, 6);
+        bullet.layer = 10;
+        Physics2D.IgnoreLayerCollision(10, 10);
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         Physics2D.IgnoreCollision(player.GetComponent<Collider2D>(), bullet.GetComponent<Collider2D>());
         Physics2D.IgnoreCollision(player.GetComponentInChildren<Collider2D>(), bullet.GetComponent<Collider2D>());

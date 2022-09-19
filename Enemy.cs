@@ -15,4 +15,12 @@ public class Enemy : MonoBehaviour
     {
         
     }
+    public enum State
+    {
+        Patrol,
+        Hunt,
+        Alert,
+        Unconscious,
+        SearchForWeapon,
+    }
 }
