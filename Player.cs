@@ -10,16 +10,21 @@ public class Player : MonoBehaviour
     public Camera cam;
     public Transform crosshair;
     public GameObject bulletPrefab;
-    public Transform muzzle;
+    public Transform attackPoint;
     public GameObject ammoCount;
     private int maxAmmo;
     private int currentAmmo;
-    Weapons currentWeapon = new Rifle();
-
+    Weapons currentWeapon = new Fists();
+    public int pickUpRange;
+    protected GameObject equippedWeapon;
+    protected GameObject discardedWeapon;
+    public Transform defaultAttackPoint;
+    
     // Start is called before the first frame update
     void Start()
     {
-        weaponCheck();
+            
+        WeaponCheck();
         
 
     }
@@ -54,7 +59,19 @@ public class Player : MonoBehaviour
                 ammoCount.GetComponent<Text>().text = currentAmmo.ToString() + "/" + maxAmmo.ToString();
             }
         }
-
+        if (Input.GetMouseButtonDown(1))
+        {
+            Debug.Log("Right mouse button was pressed");
+            Debug.Log("1. " +equippedWeapon);
+            if(equippedWeapon != null)
+            {
+                DiscardWeapn();
+                Debug.Log("2. " + equippedWeapon);
+            }
+            
+            PickUp();
+            Debug.Log("3. " + equippedWeapon);
+        }
         
     }
 
@@ -87,23 +104,85 @@ public class Player : MonoBehaviour
     
     void PickUp() //will pick up a new weapon and replace the old if the player has one 
     {
-        weaponCheck();
+        Collider2D weaponToPickupCollider = Physics2D.OverlapCircle(rb.position, pickUpRange, LayerMask.GetMask("Weapon")); //checks for weapon colliders within the pick up range 
+        if (weaponToPickupCollider == null)
+        {
+            
+            return;
+        }
+        GameObject weaponToPickup = weaponToPickupCollider.gameObject;
+        weaponToPickup.transform.SetParent(rb.gameObject.transform, true);
+        weaponToPickup.transform.localPosition = new Vector2(0.8f, 0);
+        weaponToPickup.transform.localRotation = Quaternion.Euler(0, 0, -90);
+        WeaponInfo weaponInfo = weaponToPickup.GetComponent<WeaponInfo>();
+        Debug.Log("Wow");
+        
+        switch (weaponToPickup.tag) //checks the weapon tag and changes the weapon object to be of that class 
+        {
+            case "Pistol":
+                currentWeapon = new Pistol();
+                break;
+            case "Rifle":
+                currentWeapon = new Rifle();
+                break;
+            case "Sniper":
+                currentWeapon = new Sniper();
+                break;
+            case "Shotgun":
+                currentWeapon = new Shotgun();
+                break;
+            case "Pipe":
+                currentWeapon = new Pipe();
+                break;
+            case "Katana":
+                currentWeapon = new Katana();
+                break;
+
+        }
+        currentWeapon.setCurrentAmmo(weaponInfo.currentAmmo);
+        attackPoint = weaponInfo.attackPoint;
+        bulletPrefab = weaponInfo.bulletType;
+        equippedWeapon = weaponToPickup;
+        
+        WeaponCheck();
     }
-    void discardWeapn()
+    void DiscardWeapn()
     {
 
+        discardedWeapon = equippedWeapon;
+        equippedWeapon = null;
+        WeaponInfo weaponInfo = discardedWeapon.GetComponent<WeaponInfo>();
+        if (!currentWeapon.isMelee)
+        {
+            weaponInfo.currentAmmo = currentAmmo;
+        }
+        weaponInfo.attackPoint = null;
+        discardedWeapon.transform.SetParent(null, true);
+        discardedWeapon.AddComponent<Rigidbody2D>();
+        discardedWeapon.GetComponent<Collider2D>().isTrigger = false;
+        discardedWeapon.GetComponent<Rigidbody2D>().gravityScale = 0;
+        weaponInfo.recentlyEquipped = true;
+        discardedWeapon.GetComponent<Rigidbody2D>().AddForce(attackPoint.up * 7, ForceMode2D.Impulse);
+        currentWeapon = new Fists();
+        attackPoint = defaultAttackPoint;
+        WeaponCheck();
+
+
     }
 
 
-    void weaponCheck()
+    void WeaponCheck()
     {
+        currentWeapon.setAttackPoint(attackPoint);
+        currentWeapon.isPlayerWeapon = true;
         if (currentWeapon.isMelee)
         {
             ammoCount.GetComponent<Text>().text = "";
+            
         }
         if (!currentWeapon.isMelee)
         {
-            currentWeapon.setMuzzle(muzzle);
+            
             currentWeapon.setBulletPrefab(bulletPrefab);
             maxAmmo = currentWeapon.getMaxAmmo();
             currentAmmo = currentWeapon.getCurrentAmmo();

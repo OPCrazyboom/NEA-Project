@@ -12,10 +12,9 @@ public class Bullet : MonoBehaviour
     void Start()
     {
         bullet.layer = 10;
-        Physics2D.IgnoreLayerCollision(10, 10);
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        Physics2D.IgnoreCollision(player.GetComponent<Collider2D>(), bullet.GetComponent<Collider2D>());
-        Physics2D.IgnoreCollision(player.GetComponentInChildren<Collider2D>(), bullet.GetComponent<Collider2D>());
+        Physics2D.IgnoreLayerCollision(10,10);//makes bullet colliders ignore each other
+        Physics2D.IgnoreLayerCollision(10, 12);//makes bullet colliders ignore weapon colliders
+
     }
 
     // Update is called once per frame
