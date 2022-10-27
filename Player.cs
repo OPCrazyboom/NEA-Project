@@ -19,6 +19,7 @@ public class Player : MonoBehaviour
     protected GameObject equippedWeapon;
     protected GameObject discardedWeapon;
     public Transform defaultAttackPoint;
+    public GameObject fists;
     
     // Start is called before the first frame update
     void Start()
@@ -63,7 +64,7 @@ public class Player : MonoBehaviour
         {
             Debug.Log("Right mouse button was pressed");
             Debug.Log("1. " +equippedWeapon);
-            if(equippedWeapon != null)
+            if(equippedWeapon != fists)
             {
                 DiscardWeapn();
                 Debug.Log("2. " + equippedWeapon);
@@ -150,14 +151,14 @@ public class Player : MonoBehaviour
     {
 
         discardedWeapon = equippedWeapon;
-        equippedWeapon = null;
+        equippedWeapon = fists;
         WeaponInfo weaponInfo = discardedWeapon.GetComponent<WeaponInfo>();
         if (!currentWeapon.isMelee)
         {
             weaponInfo.currentAmmo = currentAmmo;
         }
         weaponInfo.attackPoint = null;
-        discardedWeapon.transform.SetParent(null, true);
+        discardedWeapon.transform.SetParent(null);
         discardedWeapon.AddComponent<Rigidbody2D>();
         discardedWeapon.GetComponent<Collider2D>().isTrigger = false;
         discardedWeapon.GetComponent<Rigidbody2D>().gravityScale = 0;

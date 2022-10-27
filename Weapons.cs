@@ -28,14 +28,14 @@ public abstract class Weapons : Object
     }
     public bool isMelee;
     public bool isAutomatic;
-    protected Transform muzzle;
-    public void setMuzzle(Transform m)
+    protected Transform attackPoint;
+    public void setAttackPoint(Transform m)
     {
-        muzzle = m;
+        attackPoint = m;
     }
     public virtual void setBulletPrefab(GameObject bP)
     {
-
+        
     }
     public virtual int getCurrentAmmo()
     {
@@ -49,16 +49,18 @@ public abstract class Weapons : Object
     {
         return 0;
     }
-
+    public bool isPlayerWeapon;
 }
 public class Melee : Weapons
 {
     protected string damage_type;
     protected float range = 4;
+    protected int layer;
     public Melee()
     {
         isMelee = true;
-        isAutomatic = true;
+        
+
     }
     public override bool readyToAttack()
     {
@@ -72,28 +74,45 @@ public class Melee : Weapons
         }
 
     }
-    public override void Attack()
+    public override void Attack() 
     {
-        Collider2D[] entitiesHit = Physics2D.OverlapCircleAll(muzzle.position, range); // casts a circle from the attack point (muzzle because im too lazy to change it), over the radius of the range and only takes entity layer colliders
-        foreach(Collider2D entity in entitiesHit)
+        if (isPlayerWeapon) //if the weapon is player owned it detects enemies only and vice versa
+        {
+            layer = LayerMask.GetMask("Enemy"); 
+        }
+        else
+        {
+            layer = LayerMask.GetMask("Player");
+        }
+        Collider2D[] entitiesHit = Physics2D.OverlapCircleAll(attackPoint.position, range, layer); // casts a circle from the attack point, over the radius of the range and only takes entity layer colliders
+        for (int i = 0; i < entitiesHit.Length; i++)
         {
             Debug.Log("Kill");
+            Destroy(entitiesHit[i].gameObject);
         }
+
         Debug.Log("cry");
         timeSinceLastAttack = 0;
+        
     }
 }
 public class Fists : Melee
 {
+    public Fists()
+    {
+        damage_type = "blunt";
+        range = 1.5f;
+        timeBetweenAttacks = 0.1f;
+    }    
     
 }
 public class Katana : Melee
 {
     public Katana()
     {
-        damage_type = "sharp";
+        damage_type = "lethal";
         range = 2.5f;
-        timeBetweenAttacks = 2;
+        timeBetweenAttacks = 0.2f;
     }
 }
 public class Pipe : Melee
@@ -101,9 +120,9 @@ public class Pipe : Melee
 
     public Pipe()
     {
-        damage_type = "blunt";
+        damage_type = "lethal";
         range = 2;
-        timeBetweenAttacks = 2;
+        timeBetweenAttacks = 0.23f;
     }
 }
 public class Guns : Weapons
@@ -159,9 +178,9 @@ public class Guns : Weapons
         float x = Random.Range(-spread, spread);
         float y = Random.Range(-spread, spread); 
 
-        GameObject bullet = Instantiate(bulletPrefab, muzzle.position, muzzle.rotation);
+        GameObject bullet = Instantiate(bulletPrefab, attackPoint.position, attackPoint.rotation);
         Rigidbody2D bulletrb = bullet.GetComponent<Rigidbody2D>();
-        bulletrb.AddForce(muzzle.up * projectileSpeed + new Vector3(x, y), ForceMode2D.Impulse);
+        bulletrb.AddForce(attackPoint.up * projectileSpeed + new Vector3(x, y), ForceMode2D.Impulse);
         timeSinceLastAttack = 0;
 
     }
@@ -174,7 +193,7 @@ public class Pistol : Guns
     {
         projectileSpeed = 15;
         spread = 1;
-        timeBetweenAttacks = 1;
+        timeBetweenAttacks = 0.4f;
         maxAmmo = 12;
         currentAmmo = 12;
     }
@@ -210,7 +229,7 @@ public class Shotgun : Guns
     {
         projectileSpeed = 14;
         spread = 3.5f;
-        timeBetweenAttacks = 1;
+        timeBetweenAttacks = 0.7f;
         maxAmmo = 8;
         currentAmmo = 8;
     }
@@ -228,6 +247,10 @@ public class Sniper : Guns
 {
     public Sniper()
     {
-
+        projectileSpeed = 18;
+        spread = 0.2f;
+        timeBetweenAttacks = 0.9f;
+        maxAmmo = 4;
+        currentAmmo = 4;
     }
 }

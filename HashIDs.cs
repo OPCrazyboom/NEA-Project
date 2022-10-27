@@ -33,7 +33,7 @@ public class HashIDs : MonoBehaviour
                 total =+ x;
                 
             }
-            int id = total * 17 * arrayOfWeapons.GetHashCode();
+            int id = total * 17;
             
             int location = id % 20;
            
